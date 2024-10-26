@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>UTS 2023</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous" />
+  </head>
+  <body>
+    <div class="container">
+      <!-- header -->
+      <h1 class="pt-5 pb-3">MY NOTES</h1>
+      <!-- button -->
+      <div>
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#noteModal" id="addBtn">Add Notes</button>
+      </div>
+      <!-- sticky note -->
+      <div class="row pt-3" id="notesContainer"></div>
+    </div>
+
+    <!-- modal -->
+    <div class="modal fade" id="noteModal" tabindex="-1" aria-labelledby="noteModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-primary text-white">
+            <h1 class="modal-title fs-5" id="noteModalLabel">Add Notes</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="mb-0">
+                <label for="noteTitle" class="form-label"><strong>Title</strong></label>
+                <input type="text" class="form-control" placeholder="Notes Title" id="noteTitle" required />
+              </div>
+              <div class="mb-0">
+                <label for="noteContent" class="form-label"><strong>Notes</strong></label>
+                <textarea class="form-control" placeholder="Text notes" id="noteContent" style="height: 150px"></textarea>
+              </div>
+              <div class="mb-0">
+                <label for="noteColor" class="form-label"><strong>Color</strong></label>
+                <select class="form-select" id="noteColor">
+                  <option value="bg-warning">Yellow</option>
+                  <option value="bg-success">Green</option>
+                  <option value="bg-info">Blue</option>
+                  <option value="bg-danger">Red</option>
+                  <option value="bg-light">White</option>
+                </select>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" id="saveNoteBtn">Add</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script>
+      let currentNote = null;
+      let isEditMode = false;
+
+      $(document).ready(function () {
+        $("#addBtn").click(function () {
+          $("#noteModalLabel").text("Add Notes");
+          $("#saveNoteBtn").text("Add");
+          $("#noteTitle").val("");
+          $("#noteContent").val("");
+          $("#noteColor").val("bg-warning");
+        });
+
+        $("#saveNoteBtn").click(function () {
+          const title = $("#noteTitle").val();
+          const content = $("#noteContent").val();
+          const color = $("#noteColor").val();
+
+          if (title && content && color) {
+            if (isEditMode && currentNote) {
+              $(currentNote).find(".card-header strong").text(title);
+              $(currentNote).find(".card-text").text(content);
+              $(currentNote).removeClass().addClass(`card ${color} mb-3`);
+            } else {
+              const baru = `
+            <div class="col-sm-6 col-md-3 col-lg-2">
+                <div class="card ${color} mb-3" style="max-width: 18rem">
+                    <div class="card-header">
+                        <strong>${title}</strong>
+                        <button type="button" class="btn-close float-end" aria-label="Close"></button>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">${content}</p>
+                    </div>
+                </div>
+            </div> `;
+
+              $("#notesContainer").append(baru);
+            }
+
+            $("#noteTitle").val("");
+            $("#noteContent").val("");
+            $("#noteColor").val("bg-warning");
+            isEditMode = false;
+            currentNote = null;
+            $("#noteModal").modal("hide");
+          }
+        });
+
+        $("#notesContainer").on("click", ".card", function () {
+          const title = $(this).find(".card-header strong").text();
+          const content = $(this).find(".card-text").text();
+          const color = $(this)
+            .attr("class")
+            .split(" ")
+            .filter((cls) => cls.startsWith("bg-"))[0];
+          $("#noteTitle").val(title);
+          $("#noteContent").val(content);
+          $("#noteColor").val(color);
+          isEditMode = true;
+          currentNote = this;
+          $("#noteModalLabel").text("Edit Notes");
+          $("#saveNoteBtn").text("Edit");
+          $("#noteModal").modal("show");
+        });
+
+        $("#notesContainer").on("click", ".btn-close", function (event) {
+          event.stopPropagation();
+          $(this).closest(".col-sm-6").remove();
+        });
+      });
+    </script>
+  </body>
+</html>
